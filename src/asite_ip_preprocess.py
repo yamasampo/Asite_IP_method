@@ -4,7 +4,9 @@ from Bio import SeqIO
 import sys
 import subprocess
 import os
-import cPickle as Pickle
+# NOTE: HY edit: Change to adjust for Python3. cPickle is not supported under Python3. 
+# import cPickle as Pickle
+import _pickle as Pickle 
 
 def samparser_genome(sfile, frag_min, frag_max, three_prime=False):
     # Parse the SAM file and quantify mapped reads to chromosome positions.
@@ -17,9 +19,9 @@ def samparser_genome(sfile, frag_min, frag_max, three_prime=False):
     read_count = 0
     mul_read_count = 0
     if three_prime:
-        print 'Mapping reads by 3\' end...'
+        print('Mapping reads by 3\' end...')
     else:
-        print 'Mapping reads by 5\' end...'
+        print('Mapping reads by 5\' end...')
     counter = 0
     # Open the SAM file and parse the mapped reads according to chromosome positions, read length and strand
     with open(sfile) as sam_file:
@@ -112,8 +114,8 @@ def samparser_genome(sfile, frag_min, frag_max, three_prime=False):
             sys.stdout.write("Line of SAM file currently being parsed: {0}.\t\r".format(counter))
             sys.stdout.flush()
 
-    print '\nSAM file parsed for total ' + str(read_count) + ' reads mapping onto ' + str(len(dict_count)) + ' chromosomes.'
-    print str(mul_read_count) + ' reads are multiple aligned mapped to ' + str(len(dict_mul_count)) + ' chromosomes.'
+    print('\nSAM file parsed for total ' + str(read_count) + ' reads mapping onto ' + str(len(dict_count)) + ' chromosomes.')
+    print(str(mul_read_count) + ' reads are multiple aligned mapped to ' + str(len(dict_mul_count)) + ' chromosomes.')
 
     return dict_count, dict_mul_count
 
@@ -130,9 +132,9 @@ def samparser_transcriptome(sfile, frag_min, frag_max, three_prime=False):
     mul_read_count = 0
     discarded_reads = 0
     if three_prime:
-        print 'Mapping reads by 3\' end...'
+        print('Mapping reads by 3\' end...')
     else:
-        print 'Mapping reads by 5\' end...'
+        print('Mapping reads by 5\' end...')
     counter = 0
     with open(sfile) as sam_file:
         for line in sam_file:
@@ -197,9 +199,9 @@ def samparser_transcriptome(sfile, frag_min, frag_max, three_prime=False):
             sys.stdout.write("Line of SAM file currently being parsed: {0}.\t\r".format(counter))
             sys.stdout.flush()
 
-    print '\nSAM file parsed for total ' + str(read_count) + ' reads mapping onto ' + str(len(dict_count)) + ' genes.'
-    print str(mul_read_count) + ' reads are multiple aligned mapped to ' + str(len(dict_mul_count)) + ' genes.'
-    print str(discarded_reads) + ' reads were mapped spuriously.'
+    print('\nSAM file parsed for total ' + str(read_count) + ' reads mapping onto ' + str(len(dict_count)) + ' genes.')
+    print(str(mul_read_count) + ' reads are multiple aligned mapped to ' + str(len(dict_mul_count)) + ' genes.')
+    print(str(discarded_reads) + ' reads were mapped spuriously.')
     return dict_count, dict_mul_count, total_count
 
 
@@ -230,7 +232,7 @@ def create_cds_counts_transcriptome(idx_file, seq_file, output, sam_count_dict, 
         seq_dict[gene_id] = seq_record.seq
 
     dict_start = {}
-    print 'Starting to make the CDS table'
+    print('Starting to make the CDS table')
     for gene in sam_count_dict:
         try:
             start_pos, cds_len = idx_dict[gene]
@@ -316,7 +318,7 @@ def create_cds_counts_transcriptome(idx_file, seq_file, output, sam_count_dict, 
     for gene in dict_mul_count_len:
         mul_out_file.write(str(gene))
         for fsize in range(frag_min, frag_max + 1):
-            for frame in xrange(3):
+            for frame in range(3):
                 mul_out_file.write('\t' + str(dict_mul_count_len[gene][fsize][frame]))
         mul_out_file.write('\n')
     mul_out_file.close()
@@ -353,9 +355,9 @@ def create_cds_counts_genome(annotation_file, genome, output, sam_parsed_count_d
         try:
             gene_length = dict_len[gene_name]
         except KeyError:
-            print dict_cds_info[gene_name]
-            print dict_len[gene_name]
-            print 'KeyError in length calculation for dict_cds_info in gene ' + str(gene_name)
+            print(dict_cds_info[gene_name])
+            print(dict_len[gene_name])
+            print('KeyError in length calculation for dict_cds_info in gene ' + str(gene_name))
 
         # dict_cds_info contains lists of CDS start and end positions as a list. For example if there are two exons for a gene X
         # dict_cds_info['X'] = [[111234, 111345],[112122,112543]]
@@ -375,8 +377,8 @@ def create_cds_counts_genome(annotation_file, genome, output, sam_parsed_count_d
                 try:
                     nuc = genome_dict[chr_num][pos - 1]
                 except KeyError:
-                    print 'KEYERROR in genome dict for chromosome ' + str(chr_num)
-                    print 'Genome dict is ' + str(genome_dict.keys())
+                    print('KEYERROR in genome dict for chromosome ' + str(chr_num))
+                    print('Genome dict is ' + str(genome_dict.keys()))
                 except IndexError:
                     # A gene maybe present at the extreme end of chromosome (in E.coli) and hence 50 positions downstream will not be present
                     nuc = 'N'
@@ -465,7 +467,7 @@ def create_cds_counts_genome(annotation_file, genome, output, sam_parsed_count_d
     for gene in dict_mul_count_len:
         mul_out_file.write(gene)
         for fsize in range(frag_min, frag_max + 1):
-            for frame in xrange(3):
+            for frame in range(3):
                 mul_out_file.write('\t' + str(dict_mul_count_len[gene][fsize][frame]))
         mul_out_file.write('\n')
     mul_out_file.close()
@@ -590,8 +592,8 @@ def process_gff_ecoli(gff):
                     left_pos = int(line_list[3])
                     right_pos = int(line_list[4])
                     strand = line_list[6]
-                    if left_pos == 3698003:
-                        print left_pos, right_pos, strand
+                    if left_pos == 3698003: # NOTE: HY comment: Why this part is hard-coded?
+                        print(left_pos, right_pos, strand)
                     chrom = line_list[0]
                     if line_list[2] == 'gene':
                         gene_anno = line_list[8]
@@ -625,26 +627,26 @@ def process_gff_ecoli(gff):
 
                         if gene_alias in dictgene:
                             if left_pos != dictgene[gene_alias][0]:
-                                print 'CDS for gene ' + cds_name + ' does not start at gene start. The cds start is at ' + str(left_pos) + ' and gene start is at ' + str(
-                                    dictgene[gene_alias][0])
-                                print 'CDS for gene ' + cds_name + ' does not stop at gene stop. The cds stop is at ' + str(right_pos) + ' and gene stop is at ' + str(
-                                    dictgene[gene_alias][1])
+                                print('CDS for gene ' + cds_name + ' does not start at gene start. The cds start is at ' + str(left_pos) + ' and gene start is at ' + str(
+                                    dictgene[gene_alias][0]))
+                                print('CDS for gene ' + cds_name + ' does not stop at gene stop. The cds stop is at ' + str(right_pos) + ' and gene stop is at ' + str(
+                                    dictgene[gene_alias][1]))
                                 problem_genes.append(cds_name)
                         else:
-                            print 'Gene with only CDS annotation is ', cds_name
+                            print('Gene with only CDS annotation is ', cds_name)
                         if cds_name not in dictcdsinfo:
                             dictcdsinfo[cds_name] = [left_pos, right_pos, strand]
                         else:
-                            print 'Second CDS present for gene ' + cds_name
-                            print 'First CDS'
-                            print dictcdsinfo[cds_name]
-                            print 'Second CDS'
-                            print left_pos, right_pos, strand
+                            print('Second CDS present for gene ' + cds_name)
+                            print('First CDS')
+                            print(dictcdsinfo[cds_name])
+                            print('Second CDS')
+                            print(left_pos, right_pos, strand)
                             dictcdsinfo[cds_name] = [left_pos, right_pos, strand]
                         gene_length = right_pos - left_pos + 1
                         dict_len[cds_name] = gene_length
                 except IndexError:
-                    print 'Weird line:', line
+                    print('Weird line:', line)
     outfile = open("../data_files/ecoli/CDS_info.tab", 'w')
     for gene in problem_genes:
         del dictcdsinfo[gene]
@@ -721,9 +723,9 @@ def get_transcript_sequences(annotation_file, genome, output, extra_overlap=0):
     complimentarydict = {'A': 'T', 'C': 'G', 'G': 'C', 'T': 'A', 'N': 'N'}
 
     dict_gene, dict_cds_count, dict_cds_info, genome_dict, overlap_genes, dict_len = cdsparser(annotation_file, genome, extra_overlap=extra_overlap)
-    print 'Parsed the annotation and genome files'
-    print 'Size of dict_Cds_Count dict is '+str(len(dict_cds_count))
-    print 'Size of genome dict'+str(len(genome_dict))
+    print('Parsed the annotation and genome files')
+    print('Size of dict_Cds_Count dict is '+str(len(dict_cds_count)))
+    print('Size of genome dict'+str(len(genome_dict)))
     counter = 0
     nuc_dict = {}
     # For every gene in the dataset
@@ -732,9 +734,9 @@ def get_transcript_sequences(annotation_file, genome, output, extra_overlap=0):
         try:
             gene_length = dict_len[gene_name]
         except KeyError:
-            print dict_cds_info[gene_name]
-            print dict_len[gene_name]
-            print 'KeyError in multicdslen for dict_cds_info in gene ' + str(gene_name)
+            print(dict_cds_info[gene_name])
+            print(dict_len[gene_name])
+            print('KeyError in multicdslen for dict_cds_info in gene ' + str(gene_name))
         nuc_dict[gene_name] = []
         # dict_cds_info contains lists of CDS start and end positions as a list. For example if there are two exons for a gene X
         # dict_cds_info['X'] = [[111234, 111345],[112122,112543]]
@@ -754,8 +756,8 @@ def get_transcript_sequences(annotation_file, genome, output, extra_overlap=0):
                 try:
                     nuc = genome_dict[chr_num][pos - 1]
                 except KeyError:
-                    print 'KEYERROR in genome dict for chromosome ' + str(chr_num)
-                    print 'Genome dict is ' + str(genome_dict.keys())
+                    print('KEYERROR in genome dict for chromosome ' + str(chr_num))
+                    print('Genome dict is ' + str(genome_dict.keys()))
                 except IndexError:
                     # A gene maybe present at the extreme end of chromosome (in E.coli) and hence 50 positions downstream will not be present
                     nuc = 'N'
@@ -764,7 +766,7 @@ def get_transcript_sequences(annotation_file, genome, output, extra_overlap=0):
                     # Since the strand is negative, we take the complement of the current nucleotide
                     nuc = complimentarydict[nuc]
                 nuc_dict[gene_name].append(nuc)
-        print 'Got gene sequence for '+gene_name
+        print('Got gene sequence for '+gene_name)
         counter += 1
         sys.stdout.write("Out of " + str(len(dict_cds_count)) + " transcripts, currently processing transcript {0}.\t\r".format(counter))
         sys.stdout.flush()
@@ -811,10 +813,10 @@ def generate_asite_profiles(frag_min, frag_max, offfile, infolder):
                         try:
                             read_count_dict[fsize][gene][i+1] = reads_list[i - start_index]
                         except IndexError:
-                            print 'INDEX ERROR: length of read list '+str(len(reads_list))+'. Start index: '+str(start_index)+'. Length of gene '+str(length)
+                            print('INDEX ERROR: length of read list '+str(len(reads_list))+'. Start index: '+str(start_index)+'. Length of gene '+str(length))
                     else:
                         read_count_dict[fsize][gene][i] = reads_list[i - start_index]
-    print 'Parsed the CDS read counts'
+    print('Parsed the CDS read counts')
 
     # Now we generate the A-site profiles according to offsets for specific fragment size and frames
     asite_dict = {}
@@ -840,7 +842,7 @@ def generate_asite_profiles(frag_min, frag_max, offfile, infolder):
                 except ValueError:
                     offset = 0
                 except IndexError:
-                    print 'IndexError for fsize '+str(fsize)+' and frame '+str(frame)+' and offsets are '+str(offsets)
+                    print('IndexError for fsize '+str(fsize)+' and frame '+str(frame)+' and offsets are '+str(offsets))
                     offset = 0
 
                 if offset != 0:
@@ -918,7 +920,7 @@ def parse_arguments():
 # ===Program Start===
 if __name__ == "__main__":
     # Parse arguments from command line
-    print 'Starting to parse arguments'
+    print('Starting to parse arguments')
     arguments = parse_arguments()
 
     if arguments.min:
@@ -943,17 +945,17 @@ if __name__ == "__main__":
 
     # If the alignment format is BAM, then we first convert to SAM format. Requires samtools to be installed.
     if SAM.split('.')[-1] == 'bam':
-        print 'Input is a BAM file. Using samtools to convert it to SAM file'
+        print('Input is a BAM file. Using samtools to convert it to SAM file')
         try:
             subprocess.call('samtools view ' + SAM + ' > ' + SAM.split('.')[0] + '.sam', shell=True)
             SAM = SAM.split('.')[0] + '.sam'
         except Exception:
-            print 'samtools not running. Check installation. Exiting...'
+            print('samtools not running. Check installation. Exiting...')
             sys.exit()
     elif SAM.split('.')[-1] == "sam":
         pass
     else:
-        print 'Unrecognized file format of alignment input file. Exiting...'
+        print('Unrecognized file format of alignment input file. Exiting...')
         sys.exit()
     if arguments.alignment:
         if arguments.alignment == 'transcriptome':
@@ -961,7 +963,7 @@ if __name__ == "__main__":
         elif arguments.alignment == 'genome':
             transcriptome = False
         else:
-            print 'Invalid alignment value entered. Exiting...'
+            print('Invalid alignment value entered. Exiting...')
             sys.exit()
     else:
         transcriptome = False
@@ -972,34 +974,34 @@ if __name__ == "__main__":
             genome_loc = arguments.sequence
     else:
         # Default alignment to an yeast sacCer3 genome.
-        print '\n[Warning]: No genome file location given. Hard coded yeast genome file location being used'
+        print('\n[Warning]: No genome file location given. Hard coded yeast genome file location being used')
         genome_loc = '../data_files/sacCer3/sacCer3_R64-2-1_genome.fa'
 
     if arguments.annotation_file:
         annotations = arguments.annotation_file
     else:
         # Default annotations of yeast sacCer3
-        print '[Warning]: No annotation file location give. Hard coded yeast annotation file location being used'
+        print('[Warning]: No annotation file location give. Hard coded yeast annotation file location being used')
         annotations = '../data_files/sacCer3/Cds_info.tab'
-    print 'Parsed all arguments'
+    print('Parsed all arguments')
     if transcriptome:
-        print 'Entering transcriptome mode'
-        print 'Transcript sequence location: ' + transcripts
+        print('Entering transcriptome mode')
+        print('Transcript sequence location: ' + transcripts)
     else:
-        print 'Entering genome mode '
-        print 'Genome file location: ' + genome_loc
+        print('Entering genome mode ')
+        print('Genome file location: ' + genome_loc)
 
     if annotations.split('.')[-1] == 'gff' or annotations.split('.')[-1] == 'gff3':
-        print '[Warning]: GFF file entered as input for gene annotations. Exercise caution. Parsing of GFF file is optimized only for sacCer3 and E.coli. Check the format'
+        print('[Warning]: GFF file entered as input for gene annotations. Exercise caution. Parsing of GFF file is optimized only for sacCer3 and E.coli. Check the format')
         if 'sacCer3' in annotations or 'saccer3' in annotations:
             parsed_gff = process_gff(annotations)
         elif 'ecoli' in annotations:
             parsed_gff = process_gff_ecoli(annotations)
-        print 'Got annotation file from processing the GFF file'
+        print('Got annotation file from processing the GFF file')
         annotations = parsed_gff
-        print 'Annotation file: ' + annotations
+        print('Annotation file: ' + annotations)
     else:
-        print 'Annotation file: ' + annotations
+        print('Annotation file: ' + annotations)
 
     if arguments.thr_prime:
         if arguments.thr_prime == 'Yes':
@@ -1026,20 +1028,20 @@ if __name__ == "__main__":
         off_file = '../data_files/sacCer3/A-site_LP_offset_table_yeast.tab'
     # If the read counts have already been mapped, convert them to A-site profiles using the offset table generated using LP method
     if get_asite and os.path.isfile(out+'Read_counts_'+str(max_frag)+'.tab'):
-        print 'Generating A-site profiles from already created CDS Read count files'
+        print('Generating A-site profiles from already created CDS Read count files')
         generate_asite_profiles(min_frag, max_frag, off_file, out)
-        print 'Generated the A-site profiles'
-        print 'Done. Exiting...'
+        print('Generated the A-site profiles')
+        print('Done. Exiting...')
         sys.exit()
     if transcriptome:
         count_dict, mul_count_dict, total_dict = samparser_transcriptome(SAM, min_frag, max_frag)
-        print '\nParsed the SAM file aligned to the transcriptome. Starting to quantify CDS read counts'
+        print('\nParsed the SAM file aligned to the transcriptome. Starting to quantify CDS read counts')
         create_cds_counts_transcriptome(annotations, transcripts, out, count_dict, mul_count_dict, total_dict, min_frag, max_frag)
     else:
         count_dict, mul_count_dict = samparser_genome(SAM, min_frag, max_frag, three_prime=thr_prime)
-        print '\nParsed the SAM file. Starting to quantify CDS read counts'
+        print('\nParsed the SAM file. Starting to quantify CDS read counts')
         create_cds_counts_genome(annotations, genome_loc, out, count_dict, mul_count_dict, min_frag, max_frag, three_prime=thr_prime, extra_overlap=overlap)
 
     if get_asite:
         generate_asite_profiles(min_frag, max_frag, off_file, out)
-    print '\nDone'
+    print('\nDone')
